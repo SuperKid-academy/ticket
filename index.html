@@ -173,6 +173,62 @@
             color: #1f2937;
         }
 
+        /* Countdown */
+        .countdown {
+            background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .countdown .countdown-label {
+            font-size: 11px;
+            color: #6366f1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .countdown-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        .countdown-item {
+            text-align: center;
+        }
+        .countdown-item .cd-num {
+            font-size: 24px;
+            font-weight: 800;
+            color: #4338ca;
+            line-height: 1.2;
+        }
+        .countdown-item .cd-unit {
+            font-size: 10px;
+            color: #6366f1;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .countdown-live {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 4px;
+            animation: pulse 1.5s ease infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+        .countdown-started {
+            background: linear-gradient(135deg, #dcfce7, #d1fae5);
+        }
+        .countdown-started .countdown-label { color: #16a34a; }
+        .countdown-started .cd-num { color: #15803d; }
+        .countdown-started .cd-unit { color: #16a34a; }
+
         .child-card {
             grid-column: 1 / -1;
             background: linear-gradient(135deg, #fef3c7, #fde68a);
@@ -295,6 +351,7 @@
                 <div class="ticket-header">
                     <div class="brand">Superkid Academy</div>
                     <div class="ticket-title">Билет на<br>открытый урок</div>
+                    <div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,0.6);letter-spacing:2px;">№ ${Math.floor(Math.random() * (97 - 30 + 1)) + 30}</div>
                 </div>
 
                 <div class="perforation">
@@ -321,6 +378,8 @@
                         </div>
                     </div>
 
+                    <div class="countdown" id="countdown"></div>
+
                     <div class="child-card">
                         <div class="label">Ученик</div>
                         <div class="child-name">${child}</div>
@@ -337,6 +396,53 @@
                     </a>
                 </div>
             `;
+        }
+
+        // Countdown timer
+        if (child && date && time) {
+            const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+            const parts = date.trim().split(/\s+/);
+            const day = parseInt(parts[0]);
+            const monthIdx = months.indexOf(parts[1]?.toLowerCase());
+            const [hh, mm] = time.split(':').map(Number);
+
+            if (monthIdx >= 0 && !isNaN(day) && !isNaN(hh)) {
+                let year = new Date().getFullYear();
+                let target = new Date(year, monthIdx, day, hh, mm || 0, 0);
+                if (target < Date.now() - 86400000 * 30) target.setFullYear(year + 1);
+
+                function updateCountdown() {
+                    const now = Date.now();
+                    const diff = target - now;
+                    const el = document.getElementById('countdown');
+                    if (!el) return;
+
+                    if (diff <= 0 && diff > -3600000 * 2) {
+                        el.className = 'countdown countdown-started';
+                        el.innerHTML = `<div class="countdown-label"><span class="countdown-live"></span> Урок уже начался!</div>`;
+                        return;
+                    } else if (diff <= -3600000 * 2) {
+                        el.style.display = 'none';
+                        return;
+                    }
+
+                    const days = Math.floor(diff / 86400000);
+                    const hours = Math.floor((diff % 86400000) / 3600000);
+                    const mins = Math.floor((diff % 3600000) / 60000);
+                    const secs = Math.floor((diff % 60000) / 1000);
+
+                    el.innerHTML = `
+                        <div class="countdown-label">До начала урока</div>
+                        <div class="countdown-grid">
+                            <div class="countdown-item"><div class="cd-num">${days}</div><div class="cd-unit">дн</div></div>
+                            <div class="countdown-item"><div class="cd-num">${hours}</div><div class="cd-unit">час</div></div>
+                            <div class="countdown-item"><div class="cd-num">${mins}</div><div class="cd-unit">мин</div></div>
+                            <div class="countdown-item"><div class="cd-num">${secs}</div><div class="cd-unit">сек</div></div>
+                        </div>`;
+                }
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            }
         }
 
         // Background floating icons
