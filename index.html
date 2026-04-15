@@ -268,13 +268,14 @@
     </div>
 
     <script>
-        // Parse URL params
+        // Parse URL params (decodeURIComponent handles double-encoding from messengers)
         const params = new URLSearchParams(window.location.search);
-        const child = params.get('child');
-        const parent = params.get('parent');
-        const date = params.get('date');
-        const time = params.get('time');
-        const link = params.get('link');
+        const decode = v => { try { return v ? decodeURIComponent(v) : v; } catch(e) { return v; } };
+        const child = decode(params.get('child'));
+        const parent = decode(params.get('parent'));
+        const date = decode(params.get('date'));
+        const time = decode(params.get('time'));
+        const link = decode(params.get('link'));
 
         const ticket = document.getElementById('ticket');
 
